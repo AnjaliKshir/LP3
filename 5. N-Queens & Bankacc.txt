@@ -1,0 +1,126 @@
+def is_safe(board, row, col, N):
+    # Check this row on left side
+    for i in range(col):
+        if board[row][i] == 1:
+            return False
+
+    # Check upper diagonal on left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    # Check lower diagonal on left side
+    for i, j in zip(range(row, N, 1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+def solve_nqueens_util(board, col, N):
+    if col == N:
+        return True
+
+    for i in range(N):
+        if is_safe(board, i, col, N):
+            board[i][col] = 1
+
+            if solve_nqueens_util(board, col + 1, N):
+                return True
+
+            # Backtrack if this placement doesn't lead to a solution
+            board[i][col] = 0
+
+    return False
+
+def solve_nqueens(N):
+    board = [[0 for _ in range(N)] for _ in range(N)]
+
+    if not solve_nqueens_util(board, 0, N):
+        print("Solution does not exist")
+        return False
+
+    # Print the board with 'Q' for queens and '*' for empty spaces
+    for i in range(N):
+        for j in range(N):
+            if board[i][j] == 1:
+                print('Q', end=" ")
+            else:
+                print('*', end=" ")
+        print()  # Move to the next line
+    return True
+
+# Get user input for N
+N = int(input("Enter the value of N: "))
+
+solve_nqueens(N)
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+// BT Bank
+
+
+
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
+
+contract MyBank {
+    // Mapping to hold balances of users
+    mapping(address => uint) private _balances;
+
+    // Address of the contract owner
+    address public owner;
+
+    // Event to log deposits
+    event LogDepositMade(address accountHolder, uint amount);
+
+    // Constructor to set the owner and emit a default deposit
+    constructor() {
+        owner = msg.sender;
+        _balances[msg.sender] = 1000; // Initialize with 1000 units
+        emit LogDepositMade(msg.sender, 1000);
+    }
+
+    // Function to deposit ether into the bank
+    function deposit() public payable returns (uint) {
+        require(msg.sender != address(0), "Invalid address");
+        require((_balances[msg.sender] + msg.value) > _balances[msg.sender], "Deposit failed");
+
+        _balances[msg.sender] += msg.value;
+        emit LogDepositMade(msg.sender, msg.value);
+
+        return _balances[msg.sender];
+    }
+
+    // Function to withdraw ether from the bank
+    function withdraw(uint withdrawAmount) public returns (uint) {
+        require(msg.sender != address(0), "Invalid address");
+        require(_balances[msg.sender] >= withdrawAmount, "Insufficient balance");
+
+        _balances[msg.sender] -= withdrawAmount;
+
+        // Use the call function to send ether instead of transfer (best practice in newer versions)
+        (bool success, ) = msg.sender.call{value: withdrawAmount}("");
+        require(success, "Withdrawal failed");
+
+        emit LogDepositMade(msg.sender, withdrawAmount);
+        return _balances[msg.sender];
+    }
+
+    // Function to view balance of the caller
+    function viewBalance() public view returns (uint) {
+        return _balances[msg.sender];
+    }
+}
